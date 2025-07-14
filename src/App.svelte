@@ -1,4 +1,5 @@
 <script>
+    import ConversationItem from "./components/ConversationItem.svelte";
 </script>
 
 <div class="app">
@@ -7,26 +8,9 @@
             <h1 class="sidebar__title">ChatForge</h1>
             <div class="sidebar__conversations">
                 <h2 class="sidebar__conversations-title">Conversations</h2>
-                <div class="sidebar__conversation">
-                    <button
-                        class="sidebar__conversation-button sidebar__conversation-button--selected"
-                    >
-                        Conversation 1
-                    </button>
-                    <button
-                        class="sidebar__conversation-delete"
-                        aria-label="Supprimer">×</button
-                    >
-                </div>
-                <div class="sidebar__conversation">
-                    <button class="sidebar__conversation-button"
-                        >Conversation 2</button
-                    >
-                    <button
-                        class="sidebar__conversation-delete"
-                        aria-label="Supprimer">×</button
-                    >
-                </div>
+
+                <ConversationItem title="Conversation 1" selected={true} />
+                <ConversationItem title="Conversation 2" />
             </div>
         </nav>
         <form class="sidebar__form">
@@ -69,6 +53,13 @@
 </div>
 
 <style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
     .app {
         display: flex;
         flex-direction: column;
@@ -76,14 +67,13 @@
         width: 100vw;
         overflow: hidden;
         position: relative;
+        height: 100vh;
     }
 
     .app__sidebar {
         background: var(--color-bg-sidebar);
-        color: white;
+        color: var(--color-text-sidebar);
         padding: 1rem;
-        position: relative;
-        z-index: 10;
         flex-shrink: 0;
     }
 
@@ -96,8 +86,6 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        position: relative;
-        z-index: 1;
     }
 
     /* Sidebar */
@@ -108,36 +96,13 @@
     }
 
     .sidebar__title {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         margin-bottom: 1rem;
     }
 
     .sidebar__conversations-title {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         margin-bottom: 1rem;
-    }
-
-    .sidebar__conversation {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-
-    .sidebar__conversation-button {
-        flex-grow: 1;
-        text-align: left;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-    }
-
-    .sidebar__conversation-button--selected {
-        font-weight: bold;
-    }
-
-    .sidebar__conversation-delete {
-        padding: 0.5rem 1rem;
-        cursor: pointer;
     }
 
     .sidebar__form {
@@ -187,8 +152,7 @@
 
     .chat__bubble {
         padding: 0.5rem 1rem;
-        border-radius: 10px;
-        white-space: pre-wrap;
+        border-radius: 0.8rem;
     }
 
     .chat__message--user {
@@ -196,6 +160,7 @@
     }
     .chat__message--user .chat__bubble {
         background: var(--color-bg-user);
+        border-bottom-right-radius: 0;
         text-align: right;
     }
     .chat__message--user .chat__date {
@@ -207,6 +172,7 @@
     }
     .chat__message--ai .chat__bubble {
         background: var(--color-bg-assistant);
+        border-bottom-left-radius: 0;
         text-align: left;
     }
     .chat__message--ai .chat__date {
