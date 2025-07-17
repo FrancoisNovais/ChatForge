@@ -3,21 +3,30 @@
     export let selected = false;
 </script>
 
-<div class="sidebar__conversation">
+<div class="sidebar__conversation" role="listitem">
     <div
         class="sidebar__conversation-button-wrapper {selected
             ? 'sidebar__conversation-button-wrapper--selected'
             : ''}"
+        role="presentation"
     >
         <button
             class="sidebar__conversation-button {selected
                 ? 'sidebar__conversation-button--selected'
                 : ''}"
+            aria-current={selected ? "true" : undefined}
+            aria-label={"Conversation: " +
+                title +
+                (selected ? " (sélectionnée)" : "")}
         >
             {title}
         </button>
-        <button class="sidebar__conversation-delete" aria-label="Supprimer">
-            ×
+        <button
+            class="sidebar__conversation-delete"
+            aria-label={"Supprimer la conversation " + title}
+            title={"Supprimer la conversation " + title}
+        >
+            ✕
         </button>
     </div>
 </div>
@@ -68,7 +77,7 @@
 
     /* Le bouton de suppression */
     .sidebar__conversation-delete {
-        padding: 0 0.4rem;
+        padding: 0 0.4rem 0 0.3rem;
         background: none;
         border: none;
         cursor: pointer;

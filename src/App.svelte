@@ -1,11 +1,21 @@
 <script>
     import ConversationItem from "./components/ConversationItem.svelte";
+    import Button from "./components/Button.svelte";
 </script>
 
 <div class="app">
     <aside class="app__sidebar sidebar">
         <nav class="sidebar__nav">
-            <h1 class="sidebar__title">ChatForge</h1>
+            <header class="sidebar__header">
+                <img
+                    src="public/logo.png"
+                    alt=""
+                    class="sidebar__logo"
+                    aria-hidden="true"
+                />
+                <h1 class="sidebar__title">ChatForge</h1>
+            </header>
+
             <div class="sidebar__conversations">
                 <h2 class="sidebar__conversations-title">Conversations</h2>
 
@@ -20,46 +30,41 @@
                 placeholder="Nouvelle conversation"
                 class="sidebar__input"
             />
-            <button type="submit" class="sidebar__create-button">Créer</button>
+            <Button type="submit" text="Créer" />
         </form>
     </aside>
 
     <main class="app__chat chat">
-        <ul class="chat__messages">
-            <li class="chat__message chat__message--user">
-                <div class="chat__bubble">
-                    Bonjour, peux-tu m'expliquer le CSS ?
-                </div>
-                <span class="chat__date">10:15</span>
-            </li>
-            <li class="chat__message chat__message--ai">
-                <div class="chat__bubble">
-                    Bien sûr ! CSS (Cascading Style Sheets) est un langage
-                    utilisé pour décrire le style d'un document HTML...
-                </div>
-                <span class="chat__date">10:16</span>
-            </li>
-        </ul>
-        <form class="chat__form">
-            <textarea
-                name="message"
-                placeholder="Envoyer un message"
-                rows="1"
-                class="chat__input"
-            ></textarea>
-            <button type="submit" class="chat__send-button">Envoyer</button>
-        </form>
+        <div class="chat__container">
+            <ul class="chat__messages">
+                <li class="chat__message chat__message--user">
+                    <div class="chat__bubble">
+                        Bonjour, peux-tu m'expliquer le CSS ?
+                    </div>
+                    <span class="chat__date">10:15</span>
+                </li>
+                <li class="chat__message chat__message--ai">
+                    <div class="chat__bubble">
+                        Bien sûr ! CSS (Cascading Style Sheets) est un langage
+                        utilisé pour décrire le style d'un document HTML...
+                    </div>
+                    <span class="chat__date">10:16</span>
+                </li>
+            </ul>
+            <form class="chat__form">
+                <textarea
+                    name="message"
+                    placeholder="Envoyer un message"
+                    rows="1"
+                    class="chat__input"
+                ></textarea>
+                <Button type="button" text="Envoyer" />
+            </form>
+        </div>
     </main>
 </div>
 
 <style>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-    }
     .app {
         display: flex;
         flex-direction: column;
@@ -82,7 +87,6 @@
         flex-grow: 1;
         min-width: 0;
         background: var(--color-bg-main);
-        padding: 1rem;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -95,9 +99,21 @@
         justify-content: space-between;
     }
 
+    .sidebar__header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .sidebar__logo {
+        width: 2rem;
+        line-height: 1;
+    }
+
     .sidebar__title {
         font-size: 1.6rem;
-        margin-bottom: 1rem;
+        font-weight: bold;
     }
 
     .sidebar__conversations-title {
@@ -106,37 +122,47 @@
     }
 
     .sidebar__form {
-        margin-top: 1rem;
+        margin: 1rem 0;
         display: flex;
         gap: 0.5rem;
     }
 
-    .sidebar__input {
-        flex: 1;
-        padding: 0.5rem;
-    }
-
-    .sidebar__create-button {
+    .sidebar__input,
+    .chat__input {
+        width: 100%;
         padding: 0.5rem 1rem;
-        background: var(--color-bg-button);
-        color: white;
-        border: none;
-        cursor: pointer;
+        border: 1.5px solid var(--color-border-input, #ccc);
+        border-radius: 0.3rem;
+        font-size: 1rem;
+        color: var(--color-text-main, #333);
+        transition: border-color 0.2s ease;
+        outline-offset: 2px;
     }
 
-    .sidebar__create-button:hover {
-        background: var(--color-bg-button-hover);
+    .sidebar__input:focus,
+    .chat__input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6);
     }
 
-    .sidebar__create-button:active {
-        background: var(--color-bg-button-active);
+    .sidebar__input::placeholder,
+    .chat__input::placeholder {
+        color: var(--color-text-placeholder, #999);
     }
 
     /* Chat */
+    .chat__container {
+        max-width: 50rem;
+        margin: 0 auto;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
     .chat__messages {
         flex-grow: 1;
         overflow-y: auto;
-        padding: 0;
+        padding: 1rem;
         margin: 0 0 1rem 0;
         list-style: none;
         display: flex;
@@ -145,7 +171,6 @@
 
     .chat__message {
         max-width: 70%;
-        margin: 0.5rem 1rem;
         display: flex;
         flex-direction: column;
     }
@@ -190,44 +215,31 @@
     .chat__form {
         display: flex;
         gap: 0.5rem;
-    }
-
-    .chat__input {
-        flex: 1;
-        resize: none;
-        padding: 0.5rem;
-    }
-
-    .chat__send-button {
-        padding: 0.5rem 1rem;
-        background: var(--color-bg-button);
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-
-    .chat__send-button:hover {
-        background: var(--color-bg-button-hover);
-    }
-
-    .chat__send-button:active {
-        background: var(--color-bg-button-active);
+        background-color: var(--color-bg-sidebar);
+        padding: 1rem;
     }
 
     /* Responsive */
-    @media (min-width: 768px) {
+    @media (min-width: 48rem) {
         .app {
             flex-direction: row;
         }
 
         .app__sidebar {
-            width: 300px;
             height: 100vh;
             overflow-y: auto;
         }
 
         .app__chat {
             height: 100vh;
+        }
+        .chat__form {
+            margin: 0;
+            border-radius: none;
+        }
+        .chat__form {
+            margin: 1rem;
+            border-radius: 0.8rem;
         }
     }
 </style>
