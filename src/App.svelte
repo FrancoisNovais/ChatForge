@@ -3,9 +3,25 @@
     import ConversationItem from "./components/ConversationItem.svelte";
     import Button from "./components/Button.svelte";
 
-    // États réactifs 
+    // États réactifs : messages du chat, message en cours, saisie du token, et token stocké (localStorage)
     let messages = $state([]);
     let userMessage = $state("");
+    let token = $state("");
+    let mistralToken = $state(localStorage.getItem("mistralToken"));
+
+    // Fonction : enregistre le token Mistral dans localStorage
+    function saveToken(event) {
+        event.preventDefault();
+
+        token = token.trim();
+
+        if (token) {
+            localStorage.setItem("mistralToken", token);
+            mistralToken = token;
+        } else {
+            alert("Veuillez entrer une clé Mistral valide.");
+        }
+    }
 
     // Fonction : ajoute un message au chat
     function addMessage(role, content) {
@@ -13,7 +29,7 @@
         messages.push({
             role,
             content,
-            date: new Date().toLocaleTimeString().slice(0, 5)
+            date: new Date().toLocaleTimeString().slice(0, 5),
         });
         console.log("[addMessage] messages count:", messages.length);
     }
@@ -30,7 +46,7 @@
         const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
             method: "POST",
             headers: {
-                Authorization: "Bearer",
+                Authorization: `Bearer ${mistralToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(body),
@@ -68,72 +84,85 @@
     }
 </script>
 
-
 <div class="app">
-    <aside class="app__sidebar sidebar">
-        <nav class="sidebar__nav">
-            <header class="sidebar__header">
-                <img
-                    src="/logo.png"
-                    alt=""
-                    class="sidebar__logo"
-                    aria-hidden="true"
-                />
-                <h1 class="sidebar__title">ChatForge</h1>
-            </header>
-
-            <div class="sidebar__conversations">
-                <h2 class="sidebar__conversations-title">Conversations</h2>
-
-                <ConversationItem title="Conversation 1" selected={true} />
-                <ConversationItem title="Conversation 2" />
-            </div>
-        </nav>
-        <form class="sidebar__form">
+    {#if !mistralToken}
+        <form class="token__form" onsubmit={saveToken}>
             <input
                 type="text"
-                name="title"
-                placeholder="Nouvelle conversation"
-                class="sidebar__input"
+                name="token"
+                placeholder="Entrez votre clé Mistral"
+                class="token__input"
+                bind:value={token}
             />
-            <Button type="submit" text="Créer" />
+            <Button type="submit" text="Enregistrer" />
         </form>
-    </aside>
+    {:else}
+        <aside class="app__sidebar sidebar">
+            <nav class="sidebar__nav">
+                <header class="sidebar__header">
+                    <img
+                        src="/logo.png"
+                        alt=""
+                        class="sidebar__logo"
+                        aria-hidden="true"
+                    />
+                    <h1 class="sidebar__title">ChatForge</h1>
+                </header>
 
-    <main class="app__chat chat">
-        <div class="chat__container">
-            <ul class="chat__messages">
-                {#each messages as message}
-                    <li
-                        class="chat__message chat__message--{message.role ===
-                        'user'
-                            ? 'user'
-                            : 'ai'}"
-                    >
-                        <div class="chat__bubble">{message.content}</div>
-                        <span class="chat__date">{message.date}</span>
-                    </li>
-                {/each}
-            </ul>
+                <div class="sidebar__conversations">
+                    <h2 class="sidebar__conversations-title">Conversations</h2>
 
-            <form class="chat__form" onsubmit={sendMessage}>
-                <textarea
-                    name="message"
-                    placeholder="Envoyer un message"
-                    rows="1"
-                    class="chat__input"
-                    bind:value={userMessage}
-                ></textarea>
-                <Button type="submit" text="Envoyer" />
+                    <ConversationItem title="Conversation 1" selected={true} />
+                    <ConversationItem title="Conversation 2" />
+                </div>
+            </nav>
+            <form class="sidebar__form">
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Nouvelle conversation"
+                    class="sidebar__input"
+                />
+                <Button type="submit" text="Créer" />
             </form>
-        </div>
-    </main>
+        </aside>
+
+        <main class="app__chat chat">
+            <div class="chat__container">
+                <ul class="chat__messages">
+                    {#each messages as message}
+                        <li
+                            class="chat__message chat__message--{message.role ===
+                            'user'
+                                ? 'user'
+                                : 'ai'}"
+                        >
+                            <div class="chat__bubble">{message.content}</div>
+                            <span class="chat__date">{message.date}</span>
+                        </li>
+                    {/each}
+                </ul>
+
+                <form class="chat__form" onsubmit={sendMessage}>
+                    <textarea
+                        name="message"
+                        placeholder="Envoyer un message"
+                        rows="1"
+                        class="chat__input"
+                        bind:value={userMessage}
+                    ></textarea>
+                    <Button type="submit" text="Envoyer" />
+                </form>
+            </div>
+        </main>
+    {/if}
 </div>
 
 <style>
     .app {
         display: flex;
         flex-direction: column;
+        background: var( --color-bg-main);
         height: 100vh;
         width: 100vw;
         overflow: hidden;
@@ -194,7 +223,8 @@
     }
 
     .sidebar__input,
-    .chat__input {
+    .chat__input,
+    .token__form input {
         width: 100%;
         padding: 0.5rem 1rem;
         border: 1.5px solid var(--color-border-input, #ccc);
@@ -206,19 +236,22 @@
     }
 
     .sidebar__input:focus,
-    .chat__input:focus {
+    .chat__input:focus,
+    .token__form input:focus {
         outline: none;
         box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6);
     }
 
     .sidebar__input::placeholder,
-    .chat__input::placeholder {
+    .chat__input::placeholder,
+    .token__form input::placeholder  {
         color: var(--color-text-placeholder, #999);
     }
 
     /* Chat */
     .chat__container {
         max-width: 50rem;
+        width: 100%;
         margin: 0 auto;
         height: 100vh;
         display: flex;
@@ -284,6 +317,26 @@
         background-color: var(--color-bg-sidebar);
         padding: 1rem;
     }
+
+    /* Token */
+    .token__form {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--color-bg-user);
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 90%;
+        max-width: 400px;
+        z-index: 100;
+    }
+
+
 
     /* Responsive */
     @media (min-width: 48rem) {
