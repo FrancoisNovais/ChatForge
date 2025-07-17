@@ -26,7 +26,8 @@
     sans-serif;
 
   /* Couleur texte sidebar */
-  --color-text-sidebar: #f0f0f0;
+  --color-text-light: #f0f0f0;
+  --color-text-dark: #181818;
 }
 
 /* === Styles globaux de base === */
@@ -57,4 +58,137 @@ body {
 button {
   font: inherit;
   color: inherit;
+}
+
+/* === Styles des messages AI (Markdown) === */
+
+/* Titres */
+.chat__message--ai h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.chat__message--ai h2 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.chat__message--ai h3 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Paragraphes */
+.chat__message--ai p {
+  margin-bottom: 1rem;
+}
+
+/* Texte en gras et italique */
+.chat__message--ai strong {
+  font-weight: bold;
+}
+
+.chat__message--ai em {
+  font-style: italic;
+}
+
+/* Liens */
+.chat__message--ai a {
+  color: var(--color-bg-button);
+  text-decoration: none;
+}
+
+.chat__message--ai a:hover {
+  text-decoration: underline;
+}
+
+/* Images */
+.chat__message--ai img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* Listes */
+.chat__message--ai ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.chat__message--ai ol {
+  list-style-type: decimal;
+  padding-left: 20px;
+}
+
+/* Citations */
+.chat__message--ai blockquote {
+  margin: 10px 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--color-bg-button);
+  color: #666;
+  font-style: italic;
+}
+
+/* Code inline */
+.chat__message--ai code {
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* Bloc de code (pre) */
+.chat__message--ai pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  background-color: #e7e7e7;
+  padding: 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.9em;
+  margin: 1rem 0;
+}
+
+/* Tableaux */
+.chat__message--ai table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--color-bg-sidebar);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 0.9rem;
+  background-color: var(--color-bg-assistant);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.chat__message--ai th,
+.chat__message--ai td {
+  border: 1px solid var(--color-bg-sidebar);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* En-tête */
+.chat__message--ai thead {
+  background-color: var(--color-bg-sidebar);
+  color: var(--color-text-light);
+  font-weight: 600;
+}
+
+/* Lignes alternées */
+.chat__message--ai tbody tr:nth-child(even) {
+  background-color: #e0e0e0;
+}
+
+/* Survol des lignes */
+.chat__message--ai tbody tr:hover {
+  background-color: #cfcfcf;
+}
+
+/* Ligne horizontale */
+.chat__message--ai hr {
+  border: 0;
+  height: 1px;
+  margin: 15px 0;
 }

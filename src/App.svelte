@@ -1,7 +1,8 @@
 <script>
-    // Import des composants ConversationItem et Button pour les utiliser dans ce fichier
+    // Import des composants et librairies
     import ConversationItem from "./components/ConversationItem.svelte";
     import Button from "./components/Button.svelte";
+    import { marked } from "marked";  
 
     // États réactifs : messages du chat, message en cours, saisie du token, et token stocké (localStorage)
     let messages = $state([]);
@@ -9,16 +10,26 @@
     let token = $state("");
     let mistralToken = $state(localStorage.getItem("mistralToken"));
 
+    // Options marked : GFM activé, retours à la ligne simples autorisés
+    marked.setOptions({
+        gfm: true,
+        breaks: true,
+    });
+
     // Fonction : enregistre le token Mistral dans localStorage
     function saveToken(event) {
         event.preventDefault();
+        console.log("[saveToken] formulaire soumis");
 
         token = token.trim();
+        console.log("[saveToken] token saisi (après trim):", token);
 
         if (token) {
             localStorage.setItem("mistralToken", token);
             mistralToken = token;
+            console.log("[saveToken] token enregistré dans localStorage");
         } else {
+            console.warn("[saveToken] token vide ou invalide");
             alert("Veuillez entrer une clé Mistral valide.");
         }
     }
@@ -130,18 +141,20 @@
         <main class="app__chat chat">
             <div class="chat__container">
                 <ul class="chat__messages">
-                    {#each messages as message}
-                        <li
-                            class="chat__message chat__message--{message.role ===
-                            'user'
-                                ? 'user'
-                                : 'ai'}"
-                        >
-                            <div class="chat__bubble">{message.content}</div>
-                            <span class="chat__date">{message.date}</span>
-                        </li>
-                    {/each}
+                {#each messages as message}
+                    <li class="chat__message chat__message--{message.role === 'user' ? 'user' : 'ai'}">
+                    {#if message.role === 'assistant'}
+                        <div class="chat__bubble">{@html marked(message.content)}</div>
+
+
+                    {:else}
+                        <div class="chat__bubble">{message.content}</div>
+                    {/if}
+                    <span class="chat__date">{message.date}</span>
+                    </li>
+                {/each}
                 </ul>
+
 
                 <form class="chat__form" onsubmit={sendMessage}>
                     <textarea
@@ -172,7 +185,7 @@
 
     .app__sidebar {
         background: var(--color-bg-sidebar);
-        color: var(--color-text-sidebar);
+        color: var(--color-text-light);
         padding: 1rem;
         flex-shrink: 0;
     }
