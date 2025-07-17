@@ -2,14 +2,79 @@
     // Import des composants ConversationItem et Button pour les utiliser dans ce fichier
     import ConversationItem from "./components/ConversationItem.svelte";
     import Button from "./components/Button.svelte";
+
+    // États réactifs 
+    let messages = $state([]);
+    let userMessage = $state("");
+
+    // Fonction : ajoute un message au chat
+    function addMessage(role, content) {
+        console.log(`[addMessage] role: ${role}, content: ${content}`);
+        messages.push({
+            role,
+            content,
+            date: new Date().toLocaleTimeString().slice(0, 5)
+        });
+        console.log("[addMessage] messages count:", messages.length);
+    }
+
+    // Fonction : appel API Mistral avec un prompt
+    async function fetchMistralResponse(prompt) {
+        console.log("[fetchMistralResponse] prompt:", prompt);
+
+        const body = {
+            model: "mistral-tiny",
+            messages: [{ role: "user", content: prompt }],
+        };
+
+        const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+        console.log("[fetchMistralResponse] response data:", data);
+
+        return data.choices?.[0]?.message?.content ?? "(pas de réponse)";
+    }
+
+    // Fonction : gérer l'envoi complet
+    async function sendMessage(event) {
+        event.preventDefault();
+        console.log("[sendMessage] start");
+
+        const prompt = userMessage.trim();
+        if (!prompt) {
+            console.log("[sendMessage] message vide, sortie");
+            return;
+        }
+
+        addMessage("user", prompt);
+
+        try {
+            const response = await fetchMistralResponse(prompt);
+            addMessage("assistant", response);
+        } catch (err) {
+            console.error("Erreur Mistral :", err);
+            addMessage("assistant", "Erreur de connexion à l’API.");
+        }
+
+        userMessage = "";
+        console.log("[sendMessage] fin");
+    }
 </script>
+
 
 <div class="app">
     <aside class="app__sidebar sidebar">
         <nav class="sidebar__nav">
             <header class="sidebar__header">
                 <img
-                    src="public/logo.png"
+                    src="/logo.png"
                     alt=""
                     class="sidebar__logo"
                     aria-hidden="true"
@@ -38,28 +103,28 @@
     <main class="app__chat chat">
         <div class="chat__container">
             <ul class="chat__messages">
-                <li class="chat__message chat__message--user">
-                    <div class="chat__bubble">
-                        Bonjour, peux-tu m'expliquer le CSS ?
-                    </div>
-                    <span class="chat__date">10:15</span>
-                </li>
-                <li class="chat__message chat__message--ai">
-                    <div class="chat__bubble">
-                        Bien sûr ! CSS (Cascading Style Sheets) est un langage
-                        utilisé pour décrire le style d'un document HTML...
-                    </div>
-                    <span class="chat__date">10:16</span>
-                </li>
+                {#each messages as message}
+                    <li
+                        class="chat__message chat__message--{message.role ===
+                        'user'
+                            ? 'user'
+                            : 'ai'}"
+                    >
+                        <div class="chat__bubble">{message.content}</div>
+                        <span class="chat__date">{message.date}</span>
+                    </li>
+                {/each}
             </ul>
-            <form class="chat__form">
+
+            <form class="chat__form" onsubmit={sendMessage}>
                 <textarea
                     name="message"
                     placeholder="Envoyer un message"
                     rows="1"
                     class="chat__input"
+                    bind:value={userMessage}
                 ></textarea>
-                <Button type="button" text="Envoyer" />
+                <Button type="submit" text="Envoyer" />
             </form>
         </div>
     </main>
