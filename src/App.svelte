@@ -1,4 +1,5 @@
 <script>
+    // Import des composants ConversationItem et Button pour les utiliser dans ce fichier
     import ConversationItem from "./components/ConversationItem.svelte";
     import Button from "./components/Button.svelte";
 </script>

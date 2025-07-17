@@ -1,4 +1,5 @@
 <script>
+    // Export des props 'title' (titre de la conversation) et 'selected' (si l'item est sélectionné)
     export let title = "";
     export let selected = false;
 </script>

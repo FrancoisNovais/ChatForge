@@ -1,7 +1,9 @@
 <script>
+    // Export des propriétés 'type' et 'text' pour recevoir les valeurs depuis le parent
     export let type;
     export let text;
 </script>
+
 
 <button {type} aria-label={text}>
     {text}

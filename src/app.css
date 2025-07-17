@@ -1,50 +1,60 @@
- 
+/* === Variables CSS globales === */
 :root {
-    --color-primary: #1a4ed8;
-    --color-bg-button: #1a4ed8;
-    --color-bg-button-hover: #123ec0;
-    --color-bg-button-active: #0f4ea1;
-    --color-bg-cancel: #ef4444; 
-    --color-bg-cancel-hover: #b91c1c;
-    --color-bg-cancel-active:  #dc2626; 
-    --color-bg-sidebar: #181818;
-    --color-bg-sidebar-item-hover: #3a3a3a;
-    --color-bg-sidebar-item-selected: #2e2e2e;
-    --color-bg-sidebar-item-hover: #3a3a3a;
-    --color-bg-main: #f5f5f5;
-    --color-bg-user: #e8edfb;
-    --color-bg-assistant: #dcdcdc;
+  /* Couleurs principales */
+  --color-primary: #1a4ed8;
 
-    --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+  /* Couleurs pour bouton */
+  --color-bg-button: #1a4ed8;
+  --color-bg-button-hover: #123ec0;
+  --color-bg-button-active: #0f4ea1;
+  --color-bg-cancel: #ef4444;
+  --color-bg-cancel-hover: #b91c1c;
+  --color-bg-cancel-active: #dc2626;
+
+  /* Couleurs sidebar */
+  --color-bg-sidebar: #181818;
+  --color-bg-sidebar-item-hover: #3a3a3a;
+  --color-bg-sidebar-item-selected: #2e2e2e;
+
+  /* Couleurs fond principaux */
+  --color-bg-main: #f5f5f5;
+  --color-bg-user: #e8edfb;
+  --color-bg-assistant: #dcdcdc;
+
+  /* Police principale */
+  --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
     sans-serif;
 
-    --color-text-sidebar: #f0f0f0;
+  /* Couleur texte sidebar */
+  --color-text-sidebar: #f0f0f0;
 }
 
- * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* === Styles globaux de base === */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
 body {
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 html {
-    line-height: 1.5;
+  line-height: 1.5;
 }
 
 body {
-    background: var(--bg-main);
-    font-family: var(--font-sans);
+  background: var(--bg-main);
+  font-family: var(--font-sans);
 }
 
-button{
-    font: inherit;
-    color: inherit;
+button {
+  font: inherit;
+  color: inherit;
 }
