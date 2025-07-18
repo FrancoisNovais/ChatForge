@@ -74,13 +74,13 @@
         }
     }
 
-    // Fonction : appel API Mistral avec un prompt
-    async function fetchMistralResponse(prompt) {
-        console.log("[fetchMistralResponse] prompt:", prompt);
+    // Fonction : Envoie toute la conversation à l'API Mistral
+    async function fetchMistralResponse(conversation) {
+        console.log("[fetchMistralResponse] conversation:", conversation);
 
         const body = {
             model: "mistral-tiny",
-            messages: [{ role: "user", content: prompt }],
+            messages: conversation,
         };
 
         const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -112,8 +112,15 @@
         // On sauvegarde d'abord dans PocketBase, puis on met à jour localement via saveMessageToPocketBase()
         await saveMessageToPocketBase("user", prompt);
 
+        // Construire la conversation complète dans le format attendu par l'API
+        const conversationForApi = messages.map(m => ({
+            role: m.role,
+            content: m.content,
+        }));
+
         try {
-            const response = await fetchMistralResponse(prompt);
+            // Envoie toute la conversation, pas seulement le dernier message
+            const response = await fetchMistralResponse(conversationForApi);
             await saveMessageToPocketBase("assistant", response);
         } catch (err) {
             console.error("Erreur Mistral :", err);
