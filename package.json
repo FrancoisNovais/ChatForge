@@ -14,6 +14,7 @@
     "vite": "^7.0.4"
   },
   "dependencies": {
-    "marked": "^16.1.0"
+    "marked": "^16.1.0",
+    "pocketbase": "^0.26.1"
   }
 }

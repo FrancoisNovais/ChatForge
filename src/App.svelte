@@ -2,7 +2,9 @@
     // Import des composants et librairies
     import ConversationItem from "./components/ConversationItem.svelte";
     import Button from "./components/Button.svelte";
-    import { marked } from "marked";  
+    import { marked } from "marked";
+    import PocketBase from 'pocketbase';
+    import { onMount } from "svelte";
 
     // États réactifs : messages du chat, message en cours, saisie du token, et token stocké (localStorage)
     let messages = $state([]);
@@ -10,11 +12,33 @@
     let token = $state("");
     let mistralToken = $state(localStorage.getItem("mistralToken"));
 
+    const pocketBase = new PocketBase('http://127.0.0.1:8090');
+
     // Options marked : GFM activé, retours à la ligne simples autorisés
     marked.setOptions({
         gfm: true,
         breaks: true,
     });
+
+    // Au montage du composant : récupération des messages existants depuis PocketBase
+    onMount(async () => {
+        try {
+            // Charge l'historique des messages dans l'ordre chronologique
+            const records = await pocketBase.collection('message').getFullList({
+                sort: 'created',
+            });
+            messages = records.map(record => ({
+                role: record.role,
+                content: record.content,
+                date: new Date(record.created).toLocaleTimeString().slice(0, 5),
+            }));
+            console.log("[onMount] messages chargés depuis PocketBase :", $state.snapshot(messages));
+        } catch (err) {
+            console.error("[onMount] erreur chargement PocketBase :", err);
+        }
+    });
+
+
 
     // Fonction : enregistre le token Mistral dans localStorage
     function saveToken(event) {
@@ -34,15 +58,20 @@
         }
     }
 
-    // Fonction : ajoute un message au chat
-    function addMessage(role, content) {
-        console.log(`[addMessage] role: ${role}, content: ${content}`);
-        messages.push({
-            role,
-            content,
-            date: new Date().toLocaleTimeString().slice(0, 5),
-        });
-        console.log("[addMessage] messages count:", messages.length);
+    // Fonction : sauvegarde un message dans PocketBase puis l'ajoute localement
+    async function saveMessageToPocketBase(role, content) {
+        try {
+            console.log(`[PocketBase] Envoi du message ${role} vers PocketBase`);
+            const record = await pocketBase.collection('message').create({ role, content });
+            console.log(`[PocketBase] Message ${role} sauvegardé :`, record);
+            messages.push({
+                role: record.role,
+                content: record.content,
+                date: new Date(record.created).toLocaleTimeString().slice(0, 5),
+            });
+        } catch (err) {
+            console.error(`[PocketBase] Erreur sauvegarde message ${role} :`, err);
+        }
     }
 
     // Fonction : appel API Mistral avec un prompt
@@ -80,14 +109,16 @@
             return;
         }
 
-        addMessage("user", prompt);
+        // On sauvegarde d'abord dans PocketBase, puis on met à jour localement via saveMessageToPocketBase()
+        await saveMessageToPocketBase("user", prompt);
 
         try {
             const response = await fetchMistralResponse(prompt);
-            addMessage("assistant", response);
+            await saveMessageToPocketBase("assistant", response);
         } catch (err) {
             console.error("Erreur Mistral :", err);
-            addMessage("assistant", "Erreur de connexion à l’API.");
+            const errorMsg = "Erreur de connexion à l’API.";
+            await saveMessageToPocketBase("assistant", errorMsg);
         }
 
         userMessage = "";
