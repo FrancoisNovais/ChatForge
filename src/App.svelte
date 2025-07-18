@@ -94,6 +94,11 @@
 
         const data = await res.json();
         console.log("[fetchMistralResponse] response data:", data);
+        if (data && data.usage) {
+            const { prompt_tokens, completion_tokens, total_tokens } = data.usage;
+            // Affiche l'utilisation des tokens pour suivi/debug (prompt + completion + total)
+            console.log(`[TOKENS] prompt: ${prompt_tokens}, completion: ${completion_tokens}, total: ${total_tokens}`);
+        }
 
         return data.choices?.[0]?.message?.content ?? "(pas de réponse)";
     }
