@@ -406,7 +406,6 @@
     }
 
     .chat__message {
-        max-width: 70%;
         display: flex;
         flex-direction: column;
     }
@@ -475,7 +474,7 @@
     }
 
     /* Responsive */
-    @media (min-width: 48rem) {
+    @media (min-width: 50rem) {
         .app {
             flex-direction: row;
         }
@@ -492,6 +491,11 @@
         .chat__form {
             margin: 1rem;
             border-radius: 0.8rem;
+        }
+    }
+    @media (min-width: 70rem) {
+                .chat__message {
+            max-width: 70%;
         }
     }
 </style>
