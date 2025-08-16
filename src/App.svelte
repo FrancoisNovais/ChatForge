@@ -299,12 +299,11 @@
     .app {
         display: flex;
         flex-direction: column;
-        background: var( --color-bg-main);
+        background: var(--color-bg-main);
         height: 100vh;
         width: 100vw;
         overflow: hidden;
         position: relative;
-        height: 100vh;
     }
 
     .app__sidebar {
@@ -312,15 +311,15 @@
         color: var(--color-text-light);
         padding: 1rem;
         flex-shrink: 0;
+        overflow-y: auto; /* permet le scroll si sidebar trop longue */
     }
 
     .app__chat {
         flex: 1;
-        flex-grow: 1;
-        min-width: 0;
-        background: var(--color-bg-main);
         display: flex;
         flex-direction: column;
+        min-height: 0; /* important pour scroll messages sur mobile */
+        background: var(--color-bg-main);
         overflow: hidden;
     }
 
@@ -390,13 +389,14 @@
         max-width: 50rem;
         width: 100%;
         margin: 0 auto;
-        height: 100vh;
+        flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        min-height: 0; /* pour scroll messages correct */
     }
+
     .chat__messages {
-        flex-grow: 1;
+        flex: 1;
         overflow-y: auto;
         padding: 1rem;
         margin: 0 0 1rem 0;
@@ -453,6 +453,7 @@
         gap: 0.5rem;
         background-color: var(--color-bg-sidebar);
         padding: 1rem;
+        flex-shrink: 0;
     }
 
     /* Token */
@@ -473,8 +474,6 @@
         z-index: 100;
     }
 
-
-
     /* Responsive */
     @media (min-width: 48rem) {
         .app {
@@ -489,10 +488,7 @@
         .app__chat {
             height: 100vh;
         }
-        .chat__form {
-            margin: 0;
-            border-radius: none;
-        }
+
         .chat__form {
             margin: 1rem;
             border-radius: 0.8rem;
