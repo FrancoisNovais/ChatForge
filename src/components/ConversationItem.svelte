@@ -23,7 +23,7 @@
             aria-label={"Conversation: " +
                 title +
                 (selected ? " (sélectionnée)" : "")}
-            on:click={onSelect}
+            onclick={onSelect}
         >
             {title}
         </button>
@@ -31,7 +31,7 @@
             class="sidebar__conversation-delete"
             aria-label={"Supprimer la conversation " + title}
             title={"Supprimer la conversation " + title}
-            on:click={onDelete}
+            onclick={onDelete}
         >
             ✕
         </button>

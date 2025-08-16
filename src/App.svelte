@@ -13,6 +13,7 @@
     let mistralToken = $state(localStorage.getItem("mistralToken"));
     let conversations = $state([]);
     let selectedConversation = $state(null);
+    let sidebarOpen = $state(false);
 
     const pocketBase = new PocketBase('http://127.0.0.1:8090');
 
@@ -41,6 +42,7 @@
     // Fonction : charger les messages d'une conversation
     async function selectConversation(conversationId) {
         selectedConversation = conversationId;
+        sidebarOpen = false;
 
         try {
             const records = await pocketBase.collection('message').getFullList({
@@ -57,6 +59,16 @@
         } catch (err) {
             console.error("[selectConversation] erreur :", err);
         }
+    }
+
+    // Fonction : toggle menu mobile
+    function toggleSidebar() {
+        sidebarOpen = !sidebarOpen;
+    }
+
+    // Fonction : fermer le menu lors du clic sur l'overlay
+    function closeSidebar() {
+        sidebarOpen = false;
     }
 
     // Fonction : enregistre le token Mistral dans localStorage
@@ -158,7 +170,7 @@
             await saveMessageToPocketBase("assistant", response);
         } catch (err) {
             console.error("Erreur Mistral :", err);
-            const errorMsg = "Erreur de connexion à l’API.";
+            const errorMsg = "Erreur de connexion à l'API.";
             await saveMessageToPocketBase("assistant", errorMsg);
         }
 
@@ -182,6 +194,7 @@
             console.error("[createConversation] erreur :", err);
         }
     }
+
     async function deleteConversation(conversationId) {
         try {
             // Récupérer tous les messages liés
@@ -205,7 +218,6 @@
         } catch (err) {
             console.error("[deleteConversation] erreur :", err);
         }
-
     }
 
 </script>
@@ -223,7 +235,32 @@
             <Button type="submit" text="Enregistrer" />
         </form>
     {:else}
-        <aside class="app__sidebar sidebar">
+        <!-- Header mobile avec bouton hamburger -->
+        <header class="mobile-header">
+            <button 
+                class="hamburger-btn" 
+                class:hamburger-btn--open={sidebarOpen}
+                onclick={toggleSidebar}
+                aria-label={sidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            >
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            <h1 class="mobile-title">ChatForge</h1>
+        </header>
+
+        <!-- Overlay pour fermer le menu sur mobile -->
+        {#if sidebarOpen}
+            <button 
+                class="sidebar-overlay" 
+                onclick={closeSidebar}
+                onkeydown={(e) => e.key === 'Escape' && closeSidebar()}
+                aria-label="Fermer le menu"
+            ></button>
+        {/if}
+
+        <aside class="app__sidebar sidebar" class:sidebar--open={sidebarOpen}>
             <nav class="sidebar__nav">
                 <header class="sidebar__header">
                     <img
@@ -294,7 +331,6 @@
     {/if}
 </div>
 
-
 <style>
     .app {
         display: flex;
@@ -306,12 +342,105 @@
         position: relative;
     }
 
+    /* Header mobile */
+    .mobile-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: var(--color-bg-sidebar);
+        color: var(--color-text-light);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        z-index: 1000;
+    }
+
+    .hamburger-btn {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Styles communs aux 3 barres */
+    .hamburger-line {
+        position: absolute;
+        width: 24px;
+        height: 3px;
+        background: var(--color-text-light);
+        border-radius: 2px;
+        transition: transform 0.35s ease, opacity 0.25s ease;
+    }
+
+    /* Position des 3 barres */
+    .hamburger-line:nth-child(1) {
+        transform: translateY(-8px);
+    }
+
+    .hamburger-line:nth-child(2) {
+        transform: translateY(0);
+    }
+
+    .hamburger-line:nth-child(3) {
+        transform: translateY(8px);
+    }
+
+    /* --- État ouvert → croix --- */
+    .hamburger-btn--open .hamburger-line:nth-child(1) {
+        transform: rotate(45deg);
+    }
+
+    .hamburger-btn--open .hamburger-line:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-btn--open .hamburger-line:nth-child(3) {
+        transform: rotate(-45deg);
+    }
+
+
+    .mobile-title {
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    /* Overlay pour fermer le menu */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        backdrop-filter: blur(2px);
+        border: none;
+        cursor: pointer;
+    }
+
     .app__sidebar {
         background: var(--color-bg-sidebar);
         color: var(--color-text-light);
         padding: 1rem;
         flex-shrink: 0;
-        overflow-y: auto; /* permet le scroll si sidebar trop longue */
+        overflow-y: auto;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 999;
+        transition: left 0.3s ease;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar--open {
+        left: 0;
     }
 
     .app__chat {
@@ -335,6 +464,7 @@
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 1rem;
+        padding-top: 1rem;
     }
 
     .sidebar__logo {
@@ -380,7 +510,7 @@
 
     .sidebar__input::placeholder,
     .chat__input::placeholder,
-    .token__form input::placeholder  {
+    .token__form input::placeholder {
         color: var(--color-text-placeholder, #999);
     }
 
@@ -455,6 +585,12 @@
         flex-shrink: 0;
     }
 
+    .chat__empty {
+        text-align: center;
+        padding: 2rem;
+        color: var(--color-text-placeholder, #999);
+    }
+
     /* Token */
     .token__form {
         position: fixed;
@@ -470,31 +606,47 @@
         gap: 1rem;
         width: 90%;
         max-width: 400px;
-        z-index: 100;
+        z-index: 1001;
     }
 
-    /* Responsive */
+    /* Responsive Desktop */
     @media (min-width: 50rem) {
+        .mobile-header {
+            display: none;
+        }
+
         .app {
             flex-direction: row;
         }
 
         .app__sidebar {
+            position: static;
+            width: auto;
             height: 100vh;
-            overflow-y: auto;
+            left: 0;
+        }
+
+        .sidebar__header {
+            padding-top: 0;
         }
 
         .app__chat {
             height: 100vh;
+            margin-top: 0;
         }
 
         .chat__form {
             margin: 1rem;
             border-radius: 0.8rem;
         }
+
+        .sidebar-overlay {
+            display: none;
+        }
     }
+
     @media (min-width: 70rem) {
-                .chat__message {
+        .chat__message {
             max-width: 70%;
         }
     }
