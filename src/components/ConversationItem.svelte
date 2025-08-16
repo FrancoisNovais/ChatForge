@@ -2,6 +2,10 @@
     // Export des props 'title' (titre de la conversation) et 'selected' (si l'item est sélectionné)
     export let title = "";
     export let selected = false;
+
+    // callbacks passées par le parent
+    export let onSelect = () => {};
+    export let onDelete = () => {};
 </script>
 
 <div class="sidebar__conversation" role="listitem">
@@ -19,6 +23,7 @@
             aria-label={"Conversation: " +
                 title +
                 (selected ? " (sélectionnée)" : "")}
+            on:click={onSelect}
         >
             {title}
         </button>
@@ -26,6 +31,7 @@
             class="sidebar__conversation-delete"
             aria-label={"Supprimer la conversation " + title}
             title={"Supprimer la conversation " + title}
+            on:click={onDelete}
         >
             ✕
         </button>

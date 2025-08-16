@@ -6,11 +6,13 @@
     import PocketBase from 'pocketbase';
     import { onMount } from "svelte";
 
-    // États réactifs : messages du chat, message en cours, saisie du token, et token stocké (localStorage)
+    // États réactifs
     let messages = $state([]);
     let userMessage = $state("");
     let token = $state("");
     let mistralToken = $state(localStorage.getItem("mistralToken"));
+    let conversations = $state([]);
+    let selectedConversation = $state(null);
 
     const pocketBase = new PocketBase('http://127.0.0.1:8090');
 
@@ -20,25 +22,42 @@
         breaks: true,
     });
 
-    // Au montage du composant : récupération des messages existants depuis PocketBase
+    // Au montage du composant : récupération des conversations et première sélection
     onMount(async () => {
         try {
-            // Charge l'historique des messages dans l'ordre chronologique
-            const records = await pocketBase.collection('message').getFullList({
-                sort: 'created',
+            const convs = await pocketBase.collection('conversation').getFullList({
+                sort: '-created',
             });
-            messages = records.map(record => ({
-                role: record.role,
-                content: record.content,
-                date: new Date(record.created).toLocaleTimeString().slice(0, 5),
-            }));
-            console.log("[onMount] messages chargés depuis PocketBase :", $state.snapshot(messages));
+            conversations = convs;
+
+            if (convs.length > 0) {
+                selectConversation(convs[0].id);
+            }
         } catch (err) {
             console.error("[onMount] erreur chargement PocketBase :", err);
         }
     });
 
+    // Fonction : charger les messages d'une conversation
+    async function selectConversation(conversationId) {
+        selectedConversation = conversationId;
 
+        try {
+            const records = await pocketBase.collection('message').getFullList({
+                filter: `conversation.id = "${conversationId}"`,
+                sort: 'created',
+            });
+
+            messages = records.map(record => ({
+                role: record.role,
+                content: record.content,
+                date: new Date(record.created).toLocaleTimeString().slice(0, 5),
+            }));
+            console.log(`[selectConversation] messages chargés pour conv ${conversationId}`);
+        } catch (err) {
+            console.error("[selectConversation] erreur :", err);
+        }
+    }
 
     // Fonction : enregistre le token Mistral dans localStorage
     function saveToken(event) {
@@ -60,15 +79,24 @@
 
     // Fonction : sauvegarde un message dans PocketBase puis l'ajoute localement
     async function saveMessageToPocketBase(role, content) {
+        if (!selectedConversation) {
+            console.warn("[PocketBase] Aucune conversation sélectionnée");
+            return;
+        }
         try {
-            console.log(`[PocketBase] Envoi du message ${role} vers PocketBase`);
-            const record = await pocketBase.collection('message').create({ role, content });
-            console.log(`[PocketBase] Message ${role} sauvegardé :`, record);
-            messages.push({
-                role: record.role,
-                content: record.content,
-                date: new Date(record.created).toLocaleTimeString().slice(0, 5),
+            const record = await pocketBase.collection('message').create({
+                role,
+                content,
+                conversation: selectedConversation,
             });
+            messages = [
+                ...messages,
+                {
+                    role: record.role,
+                    content: record.content,
+                    date: new Date(record.created).toLocaleTimeString().slice(0, 5),
+                }
+            ];
         } catch (err) {
             console.error(`[PocketBase] Erreur sauvegarde message ${role} :`, err);
         }
@@ -91,6 +119,8 @@
             },
             body: JSON.stringify(body),
         });
+
+        if (!res.ok) throw new Error("Mistral API error: " + res.statusText);
 
         const data = await res.json();
         console.log("[fetchMistralResponse] response data:", data);
@@ -124,7 +154,6 @@
         }));
 
         try {
-            // Envoie toute la conversation, pas seulement le dernier message
             const response = await fetchMistralResponse(conversationForApi);
             await saveMessageToPocketBase("assistant", response);
         } catch (err) {
@@ -136,6 +165,49 @@
         userMessage = "";
         console.log("[sendMessage] fin");
     }
+
+    // Fonction : créer une nouvelle conversation
+    async function createConversation(event) {
+        event.preventDefault();
+        const form = event.target;
+        const title = form.title.value.trim();
+        if (!title) return;
+
+        try {
+            const conv = await pocketBase.collection('conversation').create({ title });
+            conversations = [conv, ...conversations];
+            form.reset();
+            selectConversation(conv.id); // auto-sélection
+        } catch (err) {
+            console.error("[createConversation] erreur :", err);
+        }
+    }
+    async function deleteConversation(conversationId) {
+        try {
+            // Récupérer tous les messages liés
+            const msgs = await pocketBase.collection('message').getFullList(200, {
+                filter: `conversation = "${conversationId}"`
+            });
+
+            // Supprimer tous les messages en parallèle
+            await Promise.all(msgs.map(msg => pocketBase.collection('message').delete(msg.id)));
+
+            // Supprimer la conversation
+            await pocketBase.collection('conversation').delete(conversationId);
+
+            // Mettre à jour l'état local
+            conversations = conversations.filter(c => c.id !== conversationId);
+
+            if (selectedConversation === conversationId) {
+                selectedConversation = null;
+                messages = [];
+            }
+        } catch (err) {
+            console.error("[deleteConversation] erreur :", err);
+        }
+
+    }
+
 </script>
 
 <div class="app">
@@ -166,11 +238,18 @@
                 <div class="sidebar__conversations">
                     <h2 class="sidebar__conversations-title">Conversations</h2>
 
-                    <ConversationItem title="Conversation 1" selected={true} />
-                    <ConversationItem title="Conversation 2" />
+                    {#each conversations as conv}
+                        <ConversationItem
+                            title={conv.title}
+                            selected={conv.id === selectedConversation}
+                            onSelect={() => selectConversation(conv.id)}
+                            onDelete={() => deleteConversation(conv.id)}
+                        />
+                    {/each}
+
                 </div>
             </nav>
-            <form class="sidebar__form">
+            <form class="sidebar__form" onsubmit={createConversation}>
                 <input
                     type="text"
                     name="title"
@@ -188,8 +267,6 @@
                     <li class="chat__message chat__message--{message.role === 'user' ? 'user' : 'ai'}">
                     {#if message.role === 'assistant'}
                         <div class="chat__bubble">{@html marked(message.content)}</div>
-
-
                     {:else}
                         <div class="chat__bubble">{message.content}</div>
                     {/if}
@@ -198,21 +275,25 @@
                 {/each}
                 </ul>
 
-
-                <form class="chat__form" onsubmit={sendMessage}>
-                    <textarea
-                        name="message"
-                        placeholder="Envoyer un message"
-                        rows="1"
-                        class="chat__input"
-                        bind:value={userMessage}
-                    ></textarea>
-                    <Button type="submit" text="Envoyer" />
-                </form>
+                {#if selectedConversation}
+                    <form class="chat__form" onsubmit={sendMessage}>
+                        <textarea
+                            name="message"
+                            placeholder="Envoyer un message"
+                            rows="1"
+                            class="chat__input"
+                            bind:value={userMessage}
+                        ></textarea>
+                        <Button type="submit" text="Envoyer" />
+                    </form>
+                {:else}
+                    <p class="chat__empty">Sélectionnez ou créez une conversation pour commencer à discuter.</p>
+                {/if}
             </div>
         </main>
     {/if}
 </div>
+
 
 <style>
     .app {

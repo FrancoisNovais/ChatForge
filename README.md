@@ -1,7 +1,7 @@
 # ChatForge
 
-**ChatForge** est un projet front-end développé avec **Svelte**.  
-Il permet de mettre en application les compétences de développeur front-end en réalisant une interface utilisateur qui interagit avec l'API du LLM Mistral.
+**ChatForge** est une application front-end développée avec **Svelte**.  
+Elle permet de créer une interface de chat où l’utilisateur peut échanger avec une IA via l’API **Mistral**, tout en stockant les conversations localement avec **PocketBase**.
 
 ---
 
@@ -9,68 +9,71 @@ Il permet de mettre en application les compétences de développeur front-end en
 
 ### Gestion des Messages
 
-- **Affichage des messages sous forme de discussion (utilisateur vs IA).**
-- **Envoi d'un message utilisateur et stockage en base de données locale (PocketBase).**
-- **Envoi du message à une API externe d'IA (Mistral) et récupération de la réponse.**
-- **Affichage de la réponse de l'IA et stockage en base de données locale.**
+- Affichage des messages sous forme de discussion (Utilisateur vs IA).
+- Envoi d’un message utilisateur et stockage en base de données locale (PocketBase).
+- Envoi du message à l’API Mistral et récupération de la réponse de l’IA.
+- Affichage de la réponse de l’IA et stockage en base locale.
 
-### Gestion du Token d'Authentification
+### Gestion du Token d’Authentification
 
-- **Saisie et enregistrement d'un token API dans le stockage local (localStorage).**
-- **Vérification de la présence du token avant d'envoyer une requête à l'API d'IA.**
+- Saisie et enregistrement d’un token API dans le **localStorage**.
+- Vérification automatique de la présence du token avant l’envoi des requêtes à l’API IA.
 
 ### Gestion des Conversations
 
-- ~~Affichage des conversations existantes récupérées depuis une API locale.~~
-- ~~Sélection d'une conversation pour afficher les messages associés.~~
-- ~~Création d'une nouvelle conversation avec un titre personnalisé.~~
-- ~~Suppression d'une conversation avec mise à jour de l'interface utilisateur.~~
+- Liste des conversations existantes récupérées depuis PocketBase.
+- Sélection d’une conversation pour afficher ses messages.
+- Création d’une nouvelle conversation avec titre personnalisé.
+- Suppression d’une conversation et de tous les messages associés avec mise à jour immédiate de l’interface.
 
 ---
 
 ## Technologies utilisées
 
-- **Framework Frontend** : Svelte
-- Bibliothèques :
-  - `marked` pour l'affichage des messages en Markdown
-- **Backend API** : PocketBase pour stocker les messages
-- **API IA** : Service externe (Mistral AI)
-- **Stockage** : LocalStorage pour la gestion du token API
+- **Frontend** : Svelte
+- **Bibliothèques** : `marked` pour le rendu Markdown des messages
+- **Backend** : PocketBase pour le stockage des messages et conversations
+- **API IA** : Mistral AI
+- **Stockage local** : `localStorage` pour le token API
 
 ---
 
-## Architecture de l'application
+## Architecture de l’application
 
 ### Composants principaux
 
-- **Interface de gestion des conversations** : liste des conversations disponibles (statique, non fonctionnelle).
-- **Zone de chat** : affichage des messages avec distinction entre utilisateur et IA.
-- **Zone de saisie** : champ pour entrer un message et bouton d'envoi.
-- ~~Système de gestion des tokens : formulaire de saisie pour l'authentification de l'utilisateur auprès de l'API IA (fait).~~
+- **Sidebar Conversations** : liste des conversations avec possibilité de sélectionner, créer ou supprimer une conversation.
+- **Zone de Chat** : affichage des messages avec distinction visuelle entre utilisateur et IA.
+- **Zone de Saisie** : champ texte pour envoyer un message et bouton d’envoi.
+- **Gestion des Tokens** : formulaire pour saisir et sauvegarder le token API Mistral.
 
 ---
 
-## Échanges API
+## Échanges avec les API
 
 ### API locale (PocketBase)
 
-- ~~Récupération des conversations : `GET /collections/conversations/records`~~
-- ~~Création d'une conversation : `POST /collections/conversations/records`~~
-- ~~Suppression d'une conversation : `DELETE /collections/conversations/records/{id}`~~
-- **Récupération des messages : `GET /collections/message` avec tri par date.**
-- **Envoi d'un message : `POST /collections/message` pour créer un message.**
+- **Récupérer toutes les conversations** :  
+  `GET /collections/conversations/records`
+- **Créer une conversation** :  
+  `POST /collections/conversations/records`
+- **Supprimer une conversation** :  
+  `DELETE /collections/conversations/records/{id}`
+- **Récupérer les messages** :  
+  `GET /collections/message?sort=created`
+- **Envoyer un message** :  
+  `POST /collections/message`
 
 ### API IA (Mistral AI)
 
-- **Envoi d'un message et récupération de la réponse via :**  
+- **Envoyer un message et récupérer la réponse IA** :  
   `POST https://api.mistral.ai/v1/chat/completions`
 
 ---
 
 ## Contraintes et spécifications techniques
 
-- **L'application doit être responsive et utilisable sur desktop et mobile.**
-- **Utilisation de classes CSS spécifiques pour différencier les messages utilisateur et IA.**
-- Gestion des erreurs lors des appels API (ex : problème de connexion, réponse invalide).
-
----
+- Application **responsive** (desktop et mobile).
+- Distinction visuelle claire entre messages utilisateur et messages IA via CSS.
+- Gestion des erreurs lors des appels API (connexion, réponses invalides, absence de token, etc.).
+- Mise à jour dynamique de l’interface lors de la sélection, création ou suppression de conversations.
