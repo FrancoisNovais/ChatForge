@@ -5,6 +5,12 @@ Elle permet de créer une interface de chat où l’utilisateur peut échanger a
 
 ---
 
+## Aperçu
+
+![Capture d’écran de ChatForge - Interface principale](desktop.webp)
+
+## ![Capture d’écran de ChatForge - Interface principale](mobile.webp)
+
 ## Fonctionnalités principales
 
 ### Gestion des Messages
@@ -68,6 +74,42 @@ Elle permet de créer une interface de chat où l’utilisateur peut échanger a
 
 - **Envoyer un message et récupérer la réponse IA** :  
   `POST https://api.mistral.ai/v1/chat/completions`
+
+---
+
+## Base de données (PocketBase)
+
+L’application utilise **PocketBase** pour stocker les **conversations** et les **messages** localement.
+
+### Collections à créer
+
+#### 1️⃣ `conversation`
+
+- **Description** : contient les conversations de l’utilisateur.
+- **Champs requis** :
+
+  | Champ     | Type | Description                              |
+  | --------- | ---- | ---------------------------------------- |
+  | `id`      | auto | Identifiant unique généré par PocketBase |
+  | `title`   | text | Nom de la conversation                   |
+  | `created` | date | Date de création (auto)                  |
+  | `updated` | date | Date de dernière modification (auto)     |
+
+#### 2️⃣ `message`
+
+- **Description** : contient tous les messages échangés dans les conversations.
+- **Champs requis** :
+
+  | Champ          | Type                      | Description                                                             |
+  | -------------- | ------------------------- | ----------------------------------------------------------------------- |
+  | `id`           | auto                      | Identifiant unique                                                      |
+  | `role`         | text                      | Rôle du message : `user` ou `assistant`                                 |
+  | `content`      | longtext                  | Contenu du message                                                      |
+  | `conversation` | relation → `conversation` | Relation vers la conversation à laquelle le message appartient (single) |
+  | `created`      | date                      | Date de création (auto)                                                 |
+  | `updated`      | date                      | Date de dernière modification (auto)                                    |
+
+> ⚠️ Important : la relation `conversation` dans la collection `message` doit être **single relation**, chaque message appartient à une seule conversation.
 
 ---
 

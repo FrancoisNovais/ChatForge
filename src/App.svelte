@@ -15,7 +15,7 @@
     let selectedConversation = $state(null);
     let sidebarOpen = $state(false);
 
-    const pocketBase = new PocketBase('http://127.0.0.1:8090');
+    const pocketBase = new PocketBase('http://127.0.0.1:8091');
 
     // Options marked : GFM activé, retours à la ligne simples autorisés
     marked.setOptions({
